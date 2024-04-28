@@ -1,0 +1,24 @@
+---
+require:
+  - rubocop-rspec
+  - rubocop-rake
+  - rubocop-performance
+
+AllCops:
+  NewCops: enable
+
+Style/NegatedIf:
+  Enabled: false
+
+Metrics/MethodLength:
+  CountAsOne:
+    - 'array'
+    - 'hash'
+    - 'heredoc'
+  Max: 25
+
+Metrics/AbcSize:
+  CountRepeatedAttributes: false
+
+Style/Documentation:
+  Enabled: false
