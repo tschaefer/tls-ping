@@ -2,6 +2,7 @@
 
 require 'openssl'
 require 'socket'
+require 'timeout'
 
 module TLS
   class Ping
@@ -68,15 +69,17 @@ module TLS
     end
 
     def starttls(socket)
-      socket.readpartial(4096)
-      socket.write("EHLO tls.ping\r\n")
-      socket.readpartial(4096)
+      Timeout.timeout(@timeout) do
+        socket.readpartial(4096)
+        socket.write("EHLO tls.ping\r\n")
+        socket.readpartial(4096)
 
-      ['STARTTLS', 'AUTH TLS', 'AUTH SSL', 'a001 STARTTLS'].each do |command|
-        socket.write("#{command}\r\n")
-        response = socket.readpartial(4096)
-        break if response.start_with?(/2\d\d /)
-        break if response.start_with?('a001 OK')
+        ['STARTTLS', 'AUTH TLS', 'AUTH SSL', 'a001 STARTTLS'].each do |command|
+          socket.write("#{command}\r\n")
+          response = socket.readpartial(4096)
+          break if response.start_with?(/2\d\d /)
+          break if response.start_with?('a001 OK')
+        end
       end
     end
   end
