@@ -28,6 +28,8 @@ module TLS
                   1 - ping failed
                   255 - unknown error
 
+                All your certificate are belong to us!
+
             Examples:
                 $ tls-ping badssl.com 443
                 > badssl.com:443

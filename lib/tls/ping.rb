@@ -2,7 +2,6 @@
 
 require 'openssl'
 require 'socket'
-require 'timeout'
 
 module TLS
   class Ping
@@ -30,23 +29,31 @@ module TLS
     private
 
     def execute
-      socket = Timeout.timeout(@timeout) do
-        socket = TCPSocket.new(@host, @port)
-        socket.timeout = @timeout
-        socket
-      end
-
+      socket = tcp_socket
       starttls(socket) if @starttls
-
-      tls_socket = OpenSSL::SSL::SSLSocket.new(socket, tls_ctx)
-      tls_socket.hostname = @host
-      tls_socket.connect
+      tls_socket = tls_socket(socket)
     rescue StandardError => e
       @error = e
     ensure
       @peer_cert = tls_socket&.peer_cert || tls_socket&.peer_cert_chain&.first
       tls_socket&.close
       socket&.close
+    end
+
+    def tcp_socket
+      socket = Socket.tcp(@host, @port, connect_timeout: @timeout)
+      socket.timeout = @timeout
+
+      socket
+    end
+
+    def tls_socket(socket)
+      tls_socket = OpenSSL::SSL::SSLSocket.new(socket, tls_ctx)
+      tls_socket.hostname = @host
+      tls_socket.sync_close = true
+      tls_socket.connect
+
+      tls_socket
     end
 
     def tls_ctx
@@ -61,17 +68,16 @@ module TLS
     end
 
     def starttls(socket)
-      return if !@starttls
-
-      socket.gets
+      socket.readpartial(4096)
       socket.write("EHLO tls.ping\r\n")
+      socket.readpartial(4096)
 
-      loop do
-        break if socket.gets.start_with?('250 ')
+      ['STARTTLS', 'AUTH TLS', 'AUTH SSL', 'a001 STARTTLS'].each do |command|
+        socket.write("#{command}\r\n")
+        response = socket.readpartial(4096)
+        break if response.start_with?(/2\d\d /)
+        break if response.start_with?('a001 OK')
       end
-
-      socket.write("STARTTLS\r\n")
-      socket.gets
     end
   end
 end
