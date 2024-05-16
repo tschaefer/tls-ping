@@ -45,7 +45,7 @@ module TLS
 
                 $ tls-ping badssl.com 22
                 > badssl.com:22
-                   [ UNKNOWN ]
+                   [ UNKNOWN ] Connection timed out - user specified timeout
 
                 $ tls-ping --starttls smtp.gmail.com 25
                 > smtp.gmail.com:25

@@ -47,8 +47,8 @@ module TLS
         rescue OpenSSL::SSL::SSLError => e
           reason = e.message.split(': ').last.capitalize
           [PING_FAIL, reason]
-        rescue StandardError
-          [PING_UNKNOWN]
+        rescue StandardError => e
+          [PING_UNKNOWN, e.message.capitalize]
         end
 
         def result(code, reason: nil)
