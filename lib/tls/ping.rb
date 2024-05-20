@@ -41,11 +41,42 @@ module TLS
       socket&.close
     end
 
-    def tcp_socket
-      socket = Socket.tcp(@host, @port, connect_timeout: @timeout)
-      socket.timeout = @timeout
+    def socket
+      addr_info = Socket.getaddrinfo(@host, nil, nil, Socket::SOCK_STREAM)
+      address_family = addr_info[0][4]
+
+      socket = Socket.new(address_family, Socket::SOCK_STREAM, 0)
+      sockaddr = Socket.sockaddr_in(@port, addr_info[0][3])
+
+      begin
+        socket.connect_nonblock(sockaddr)
+      rescue IO::WaitWritable
+        if socket.wait_writable(@timeout)
+          begin
+            socket.connect_nonblock(sockaddr)
+          rescue Errno::EISCONN
+            # connection established
+          rescue StandardError => e
+            socket.close
+            raise e
+          end
+        else
+          socket.close
+          raise Timeout::Error, 'Execution expired'
+        end
+      end
 
       socket
+    end
+
+    def tcp_socket
+      socket = socket()
+
+      tcp_socket = TCPSocket.for_fd(socket.fileno)
+      tcp_socket.autoclose = true
+      tcp_socket.timeout = @timeout
+
+      tcp_socket
     end
 
     def tls_socket(socket)
