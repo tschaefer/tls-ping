@@ -9,8 +9,9 @@ module TLS
       class Command < TLS::Ping::App::BaseCommand
         parameter 'HOST', 'hostname to ping'
         parameter 'PORT', 'port to ping'
+        option ['-d', '--due'], :flag, 'show days until certificate expiration'
         option ['-s', '--starttls'], :flag, 'use STARTTLS'
-        option ['-t', '--timeout'], 'SECONDS', 'timeout in seconds', default: 5
+        option ['-t', '--timeout'], 'SECONDS', 'connection timeout in seconds', default: 5
         option ['-q', '--quiet'], :flag, 'suppress output'
 
         PING_OK = 0
@@ -42,13 +43,30 @@ module TLS
           )
           ping.succeeded!
 
-          reason = ping.peer_cert.subject.to_s
+          reason = info(ping.peer_cert)
           [PING_OK, reason]
         rescue OpenSSL::SSL::SSLError => e
           reason = e.message.split(': ').last.capitalize
           [PING_FAIL, reason]
         rescue StandardError => e
           [PING_UNKNOWN, e.message.capitalize]
+        end
+
+        def info(cert) # rubocop:disable Metrics/AbcSize
+          return if quiet?
+          return cert.subject.to_s if !due?
+
+          days = (cert.not_after - Time.now) / 60 / 60 / 24
+          due = case days
+                when 0..3
+                  Pastel.new.bold.red(days.to_i.to_s)
+                when 4..10
+                  Pastel.new.bold.yellow(days.to_i.to_s)
+                else
+                  Pastel.new.bold.green(days.to_i.to_s)
+                end
+
+          "#{cert.subject}, #{due} days"
         end
 
         def result(code, reason: nil)

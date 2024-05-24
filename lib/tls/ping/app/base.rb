@@ -36,7 +36,7 @@ module TLS
                    [ OK ] /CN=*.badssl.com
 
                 $ tls-ping badssl.com 80
-                > badsll.com:80
+                > badssl.com:80
                    [ FAIL ] Wrong version number
 
                 $ tls-ping self-signed.badssl.com 443
@@ -50,6 +50,10 @@ module TLS
                 $ tls-ping --starttls smtp.gmail.com 25
                 > smtp.gmail.com:25
                    [ OK ] /CN=smtp.gmail.com
+
+                $ tls-ping --due badssl.com 443
+                > badssl.com:443
+                   [ OK ] /CN=*.badssl.com, 81 days
 
             Authors:
                 Tobias Schäfer <github@blackox.org>
