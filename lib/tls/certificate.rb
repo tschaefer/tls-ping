@@ -39,13 +39,13 @@ module TLS
 
     def alternative_name_valid!
       san = @certificate.extensions.find { |ext| ext.oid == 'subjectAltName' }
-      raise OpenSSL::SSL::SSLError, 'No alternative certificate subject names found' if !san
+      raise OpenSSL::SSL::SSLError, 'No alternative certificate subject names found.' if !san
 
       pattern = @host.match?(Resolv::AddressRegex) ? 'IP Address:' : 'DNS:'
       hosts = san.value.split(', ').map { |key| key.sub(pattern, '') }
       return if name_match?(hosts)
 
-      raise OpenSSL::SSL::SSLError, 'No alternative certificate subject name matches target host name'
+      raise OpenSSL::SSL::SSLError, 'No alternative certificate subject name matches target host name.'
     end
 
     def name_match?(hosts)

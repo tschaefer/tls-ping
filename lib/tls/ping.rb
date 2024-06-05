@@ -30,7 +30,7 @@ module TLS
 
     def execute
       socket = TLS::Socket.new(@host, @port, starttls: @starttls, timeout: @timeout)
-      socket.connect
+      socket.open
       @peer_cert = socket.peer_cert
       TLS::Certificate.new(@peer_cert, @host).valid!
     rescue StandardError => e

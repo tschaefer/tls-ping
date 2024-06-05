@@ -2,7 +2,7 @@ _tls-ping() {
     local cur prev
     _get_comp_words_by_ref cur prev
 
-    local options='--help --man --version --due --starttls'
+    local options='--help --man --version --due --starttls --quiet'
 
     if [[ -n $prev ]] && [[ $prev != tls-ping ]]; then
         return

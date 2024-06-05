@@ -6,6 +6,8 @@ require 'timeout'
 
 module TLS
   class Socket
+    attr_reader :raw, :secure
+
     def initialize(host, port, starttls: false, timeout: 5)
       @host = host
       @port = port
@@ -13,22 +15,25 @@ module TLS
       @timeout = timeout
     end
 
-    def connect
+    def open
       tcp_socket = tcp_socket(socket)
       start_tls(tcp_socket) if @starttls
       tls_socket = tls_socket(tcp_socket)
 
-      @tcp_socket = tcp_socket
-      @tls_socket = tls_socket
+      @raw = tcp_socket
+      @secure = tls_socket
     end
 
     def close
-      @tls_socket&.close
-      @tcp_socket&.close
+      @secure&.close if @secure&.closed? == false
+      @raw&.close if @raw&.closed? == false
+
+      @secure = nil
+      @raw = nil
     end
 
     def peer_cert
-      @tls_socket&.peer_cert || @tls_socket&.peer_cert_chain&.first
+      @secure&.peer_cert || @secure&.peer_cert_chain&.first
     end
 
     private
