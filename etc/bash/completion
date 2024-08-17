@@ -2,11 +2,19 @@ _tls-ping() {
     local cur prev
     _get_comp_words_by_ref cur prev
 
-    local options='--help --man --version --due --starttls --quiet'
+    local info='--help --man --version'
+    local action='--due --starttls --quiet'
+    local options="$info $action"
 
-    if [[ -n $prev ]] && [[ $prev != tls-ping ]]; then
-        return
-    fi
+    case "$prev" in
+        --help|--man|--version)
+            return
+            ;;
+        --due|--starttls|--quiet)
+            mapfile -t COMPREPLY < <(compgen -W "$action" -- "$cur")
+            return
+            ;;
+    esac
 
     mapfile -t COMPREPLY < <(compgen -W "$options" -- "$cur")
 }
