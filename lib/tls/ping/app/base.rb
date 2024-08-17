@@ -31,7 +31,7 @@ module TLS
                 All your certificate are belong to us!
 
             Examples:
-                $ tls-ping badssl.com 443
+                $ tls-ping badssl.com
                 > badssl.com:443
                    [ OK ] /CN=*.badssl.com
 

@@ -8,7 +8,7 @@ module TLS
     module App
       class Command < TLS::Ping::App::BaseCommand
         parameter 'HOST', 'hostname to ping'
-        parameter 'PORT', 'port to ping'
+        parameter '[PORT]', 'port to ping', default: 443
         option ['-d', '--due'], :flag, 'show days until certificate expiration'
         option ['-s', '--starttls'], :flag, 'use STARTTLS'
         option ['-t', '--timeout'], 'SECONDS', 'connection timeout in seconds', default: 5
