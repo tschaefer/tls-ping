@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
 
   spec.post_install_message = 'All your certificate are belong to us!'
 
-  spec.add_dependency 'clamp', '>= 1.3.2', '< 1.5.0'
+  spec.add_dependency 'clamp', '>= 1.3.2', '< 1.6.0'
   spec.add_dependency 'pastel', '~> 0.8.0'
   spec.add_dependency 'tty-pager', '~> 0.14.0'
 end
